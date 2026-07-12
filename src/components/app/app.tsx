@@ -1,5 +1,11 @@
-import { useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { FC, useEffect } from 'react';
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  useParams
+} from 'react-router-dom';
 import '../../index.css';
 import styles from './app.module.css';
 
@@ -25,6 +31,18 @@ import {
 import { fetchUser } from '../../services/slices/userSlice';
 import { ProtectedRoute } from '../protected-route';
 import { Preloader } from '@ui';
+
+const ModalOrder: FC<{ children: React.ReactNode; onClose: () => void }> = ({
+  children,
+  onClose
+}) => {
+  const { number } = useParams<{ number: string }>();
+  return (
+    <Modal title={`#${number?.padStart(6, '0') || ''}`} onClose={onClose}>
+      {children}
+    </Modal>
+  );
+};
 
 const App = () => {
   const dispatch = useDispatch();
@@ -149,9 +167,9 @@ const App = () => {
               <Route
                 path='/feed/:number'
                 element={
-                  <Modal title='Информация о заказе' onClose={handleModalClose}>
+                  <ModalOrder onClose={handleModalClose}>
                     <OrderInfo />
-                  </Modal>
+                  </ModalOrder>
                 }
               />
               <Route
@@ -166,12 +184,9 @@ const App = () => {
                 path='/profile/orders/:number'
                 element={
                   <ProtectedRoute>
-                    <Modal
-                      title='Информация о заказе'
-                      onClose={handleModalClose}
-                    >
+                    <ModalOrder onClose={handleModalClose}>
                       <OrderInfo />
-                    </Modal>
+                    </ModalOrder>
                   </ProtectedRoute>
                 }
               />

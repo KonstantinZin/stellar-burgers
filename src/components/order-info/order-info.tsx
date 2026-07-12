@@ -3,25 +3,38 @@ import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from '../../services/store';
 import { selectIngredients } from '../../services/slices/ingredientsSlice';
 import { selectOrders, fetchFeeds } from '../../services/slices/feedSlice';
+import {
+  selectUserOrders,
+  fetchUserOrders
+} from '../../services/slices/userOrdersSlice';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
+import { TIngredient, TOrder } from '@utils-types';
+import { useState } from 'react';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams<{ number: string }>();
   const dispatch = useDispatch();
   const ingredients: TIngredient[] = useSelector(selectIngredients);
-  const orders = useSelector(selectOrders);
+  const feedOrders = useSelector(selectOrders);
+  const userOrders = useSelector(selectUserOrders);
+  const [orderData, setOrderData] = useState<TOrder | null>(null);
 
   useEffect(() => {
-    if (!orders.length) {
+    let order = feedOrders.find((o) => o.number === parseInt(number || ''));
+    if (!order) {
+      order = userOrders.find((o) => o.number === parseInt(number || ''));
+    }
+    if (!order && !feedOrders.length) {
       dispatch(fetchFeeds());
     }
-  }, [dispatch, orders.length]);
-
-  const orderData = orders.find(
-    (order) => order.number === parseInt(number || '')
-  );
+    if (!order && !userOrders.length) {
+      dispatch(fetchUserOrders());
+    }
+    if (order) {
+      setOrderData(order);
+    }
+  }, [number, feedOrders, userOrders, dispatch]);
 
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
