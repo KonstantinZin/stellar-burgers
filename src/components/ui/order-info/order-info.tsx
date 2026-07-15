@@ -1,4 +1,4 @@
-import React, { FC, memo } from 'react';
+import React, { FC } from 'react';
 import {
   CurrencyIcon,
   FormattedDate
@@ -9,7 +9,7 @@ import styles from './order-info.module.css';
 import { OrderInfoUIProps } from './type';
 import { OrderStatus } from '@components';
 
-export const OrderInfoUI: FC<OrderInfoUIProps> = memo(({ orderInfo }) => (
+export const OrderInfoUI: FC<OrderInfoUIProps> = ({ orderInfo }) => (
   <div className={styles.wrap}>
     <h3 className={`text text_type_main-medium  pb-3 pt-10 ${styles.header}`}>
       {orderInfo.name}
@@ -48,4 +48,4 @@ export const OrderInfoUI: FC<OrderInfoUIProps> = memo(({ orderInfo }) => (
       <CurrencyIcon type={'primary'} />
     </div>
   </div>
-));
+);

@@ -1,23 +1,41 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+import { selectIngredients } from '../../services/slices/ingredientsSlice';
+import { selectOrders, fetchFeeds } from '../../services/slices/feedSlice';
+import {
+  selectUserOrders,
+  fetchUserOrders
+} from '../../services/slices/userOrdersSlice';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
+import { TIngredient, TOrder } from '@utils-types';
+import { useState } from 'react';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams<{ number: string }>();
+  const dispatch = useDispatch();
+  const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const feedOrders = useSelector(selectOrders);
+  const userOrders = useSelector(selectUserOrders);
+  const [orderData, setOrderData] = useState<TOrder | null>(null);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    let order = feedOrders.find((o) => o.number === parseInt(number || ''));
+    if (!order) {
+      order = userOrders.find((o) => o.number === parseInt(number || ''));
+    }
+    if (!order && !feedOrders.length) {
+      dispatch(fetchFeeds());
+    }
+    if (!order && !userOrders.length) {
+      dispatch(fetchUserOrders());
+    }
+    if (order) {
+      setOrderData(order);
+    }
+  }, [number, feedOrders, userOrders, dispatch]);
 
-  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -43,7 +61,7 @@ export const OrderInfo: FC = () => {
 
         return acc;
       },
-      {}
+      {} as TIngredientsWithCount
     );
 
     const total = Object.values(ingredientsInfo).reduce(
